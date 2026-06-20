@@ -1,0 +1,11 @@
+{
+  "name": "claude-skills",
+  "owner": { "name": "Anthony Gregory" },
+  "plugins": [
+    {
+      "name": "vibe-playlist",
+      "source": "./vibe-playlist",
+      "description": "Build Apple Music playlists from your own library by vibe; includes a reverse-Wrapped taste profiler."
+    }
+  ]
+}

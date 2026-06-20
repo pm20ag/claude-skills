@@ -1,0 +1,10 @@
+{
+  "name": "vibe-playlist",
+  "version": "1.0.0",
+  "description": "Build Apple Music playlists from your own library by vibe — describe a mood, seed a few songs, set length, get a playlist. Includes derived genre/region/energy tags and a reverse-Wrapped taste profiler.",
+  "author": { "name": "Anthony Gregory" },
+  "homepage": "https://github.com/pm20ag/claude-skills/tree/main/vibe-playlist",
+  "repository": "https://github.com/pm20ag/claude-skills",
+  "license": "MIT",
+  "keywords": ["apple-music", "playlist", "music", "macos", "applescript"]
+}

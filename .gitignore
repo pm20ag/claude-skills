@@ -7,3 +7,8 @@ __pycache__/
 
 # The shipped artist tag base is scripts/artist_tags.seed.tsv (committed).
 # A user's live, lazily-grown tags live in ~/<skill>/ at runtime, not here.
+
+# Personal listening history / edit log / notes — keep local, never publish
+**/feedback.tsv
+**/snapshots/
+**/playlist_notes.md

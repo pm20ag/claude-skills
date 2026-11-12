@@ -16,19 +16,21 @@ set plName to "$NAME"
 set AppleScript's text item delimiters to ","
 set ids to text items of idList
 set AppleScript's text item delimiters to ""
-tell application "Music"
-	set newPl to make new user playlist with properties {name:plName}
-	set added to 0
-	set missing to 0
-	repeat with anId in ids
-		try
-			set t to (first track of library playlist 1 whose persistent ID is (anId as string))
-			duplicate t to newPl
-			set added to added + 1
-		on error
-			set missing to missing + 1
-		end try
-	end repeat
-	return "Created '" & (name of newPl) & "' — " & added & " tracks added, " & missing & " not found."
-end tell
+with timeout of 600 seconds
+	tell application "Music"
+		set newPl to make new user playlist with properties {name:plName}
+		set added to 0
+		set missing to 0
+		repeat with anId in ids
+			try
+				set t to (first track of library playlist 1 whose persistent ID is (anId as string))
+				duplicate t to newPl
+				set added to added + 1
+			on error
+				set missing to missing + 1
+			end try
+		end repeat
+		return "Created '" & (name of newPl) & "' — " & added & " tracks added, " & missing & " not found."
+	end tell
+end timeout
 EOF

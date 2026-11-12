@@ -1,35 +1,23 @@
 ---
-name: vibe-playlist
+name: vibe-playlist-personal
 description: Build an Apple Music playlist from the user's own library by vibe. Use when the user describes a mood/vibe in a few words (optionally with seed/example songs and parameters like length, era, artists to include/exclude) and wants a playlist made. Triggers on "make a playlist", "vibe", "playlist of", "songs like", or any request to generate/curate a playlist from their music.
 ---
 
 # Vibe Playlist
 
 Turn a short vibe description (plus optional seed songs and parameters) into a real
-Apple Music playlist built from the user's **own library**. All tooling and data live in
+Apple Music playlist built from the user's **own library**. All tooling lives in
 `~/vibe-playlists/`.
-
-## Setup (first run)
-If `~/vibe-playlists/refresh.sh` is missing, bootstrap it:
-1. `mkdir -p ~/vibe-playlists`
-2. Copy the bundled scripts into it. If this skill was installed as a Claude Code plugin,
-   the scripts ship alongside it under the plugin root's `scripts/` dir; otherwise they were
-   placed by `install.sh`. Also seed tags: `cp scripts/artist_tags.seed.tsv ~/vibe-playlists/artist_tags.tsv`
-   (only if `artist_tags.tsv` doesn't already exist — never overwrite a user's tags).
-3. `chmod +x ~/vibe-playlists/*.sh`
-4. Run `~/vibe-playlists/refresh.sh` to build `library.tsv` from the user's Music library.
-   The first `osascript` call triggers a one-time macOS prompt to control Music — tell the
-   user to approve it.
 
 ## Tooling
 - `~/vibe-playlists/library.tsv` — cached library. Columns (tab-separated):
-  `persistentID  name  artist  album  genre  year  plays  durationSec  dateAdded`. Grep this;
+  `persistentID  name  artist  album  genre  year  plays  durationSec`. Grep this;
   do **not** read the whole file into context.
 - `~/vibe-playlists/artist_tags.tsv` — **derived** per-artist tags (the genre/vibe
   source of truth — trust these over Apple's `genre` column, which is unreliable).
   Columns: `artist  derived_genre  region  era  energy  mood`. `energy` is 1-5;
   `region` is a scene/country code (e.g. "UK (London)", "NG (Lagos)", "US (Atlanta)").
-  Partial coverage — ships with a seed; the tail is filled lazily (below).
+  Partial coverage — head artists are pre-tagged; the tail is filled lazily (below).
 - `~/vibe-playlists/untagged.sh [N]` — lists library artists with no tags yet, by
   track count. Use to find which candidate artists need lazy tagging.
 - `~/vibe-playlists/refresh.sh` — rebuild `library.tsv` (run if songs were added).
@@ -39,6 +27,25 @@ If `~/vibe-playlists/refresh.sh` is missing, bootstrap it:
 - `~/vibe-playlists/playlist_tracks.sh "Name"` — dump a playlist's tracks (RecordSep-
   joined id/name/artist blob) to use as a **source pool** instead of the whole library.
 - `~/vibe-playlists/profile.py` — taste-profile stats (see reverse-Wrapped below).
+- `~/vibe-playlists/snapshot.sh "Name"` — save a playlist's current tracks as the diff
+  baseline (`snapshots/<slug>.tsv`). Run after building or after absorbing edits.
+- `~/vibe-playlists/diff.sh "Name"` — show what changed vs the last snapshot
+  (added / removed / reordered). Read-only; does not move the baseline.
+- `~/vibe-playlists/learn.sh "Name"` — absorb manual edits: log adds/cuts to
+  `feedback.tsv`, flag added artists that still need tags, then re-snapshot.
+
+## Feedback loop (when the user edits a playlist by hand)
+When the user says they tweaked a playlist and wants it checked ("I cleaned up Modern
+Indie, see what I changed"):
+1. Run `learn.sh "Name"`. It prints the diff, appends rows to `feedback.tsv`
+   (`date  playlist  action  artist  name`), flags any added artists missing from
+   `artist_tags.tsv`, and re-snapshots.
+2. For each `NEEDS TAG → artist`, derive a tag row and append to `artist_tags.tsv`.
+3. Treat `feedback.tsv` as taste signal in future builds: **`removed` from a vibe =
+   avoid that song (and lean away from its artist) for that vibe; `added` = it belongs.**
+   Check it before curating a similar playlist.
+- Snapshots are captured **on demand** (at build time and when checking edits) — there is
+  no background watcher, so always diff/learn against the most recent snapshot.
 
 ## Sources & filters
 - Default source is the whole library (`library.tsv`). If the user names a playlist as the
@@ -48,12 +55,11 @@ If `~/vibe-playlists/refresh.sh` is missing, bootstrap it:
 - **Filters**: `year` column = release year; `dateAdded` = when added (use for "recent" /
   era windows); plus derived_genre / region / energy / mood. Combine freely.
 
-## Know the user before defaulting
-Every library is different. Do NOT assume a default genre. Read the user's actual taste from
-their data before curating: lifetime `plays` shows long-term favourites, while `dateAdded`
-(recent years) shows current taste — these often diverge. When in doubt, run `profile.py`
-or skim the library first. For "favorites/nostalgia" lean on `plays`; for "what I'm into now"
-prefer recently-added tracks.
+## Taste note (important)
+The user tired of hip-hop/rap ~2021; raw track/play counts over-represent that old era.
+Their **current** taste (by `dateAdded` 2023+) leans Electronic/Dance, R&B/Soul, UK rap,
+Afro, indie, Latin. Do NOT default to US hip-hop. For "favorites/nostalgia" use lifetime
+`plays`; for "what I'm into now" prefer recently-added tracks. See memory `music-taste-shift`.
 
 ## Inputs to gather (ask only if missing and it matters)
 - **Vibe**: the few-word description. Required.

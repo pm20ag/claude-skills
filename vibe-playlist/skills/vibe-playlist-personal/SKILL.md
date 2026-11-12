@@ -7,31 +7,31 @@ description: Build an Apple Music playlist from the user's own library by vibe. 
 
 Turn a short vibe description (plus optional seed songs and parameters) into a real
 Apple Music playlist built from the user's **own library**. All tooling lives in
-`~/vibe-playlists/`.
+`~/claude-skills/vibe-playlist/`.
 
 ## Tooling
-- `~/vibe-playlists/library.tsv` — cached library. Columns (tab-separated):
+- `~/claude-skills/vibe-playlist/library.tsv` — cached library. Columns (tab-separated):
   `persistentID  name  artist  album  genre  year  plays  durationSec`. Grep this;
   do **not** read the whole file into context.
-- `~/vibe-playlists/artist_tags.tsv` — **derived** per-artist tags (the genre/vibe
+- `~/claude-skills/vibe-playlist/artist_tags.tsv` — **derived** per-artist tags (the genre/vibe
   source of truth — trust these over Apple's `genre` column, which is unreliable).
   Columns: `artist  derived_genre  region  era  energy  mood`. `energy` is 1-5;
   `region` is a scene/country code (e.g. "UK (London)", "NG (Lagos)", "US (Atlanta)").
   Partial coverage — head artists are pre-tagged; the tail is filled lazily (below).
-- `~/vibe-playlists/untagged.sh [N]` — lists library artists with no tags yet, by
+- `~/claude-skills/vibe-playlist/untagged.sh [N]` — lists library artists with no tags yet, by
   track count. Use to find which candidate artists need lazy tagging.
-- `~/vibe-playlists/refresh.sh` — rebuild `library.tsv` (run if songs were added).
-- `~/vibe-playlists/make_playlist.sh "Name" < ids` — create a playlist from a list
+- `~/claude-skills/vibe-playlist/refresh.sh` — rebuild `library.tsv` (run if songs were added).
+- `~/claude-skills/vibe-playlist/make_playlist.sh "Name" < ids` — create a playlist from a list
   of persistent IDs (comma/space/newline separated on stdin).
-- `~/vibe-playlists/list_playlists.sh` — list the user's playlists with track counts.
-- `~/vibe-playlists/playlist_tracks.sh "Name"` — dump a playlist's tracks (RecordSep-
+- `~/claude-skills/vibe-playlist/list_playlists.sh` — list the user's playlists with track counts.
+- `~/claude-skills/vibe-playlist/playlist_tracks.sh "Name"` — dump a playlist's tracks (RecordSep-
   joined id/name/artist blob) to use as a **source pool** instead of the whole library.
-- `~/vibe-playlists/profile.py` — taste-profile stats (see reverse-Wrapped below).
-- `~/vibe-playlists/snapshot.sh "Name"` — save a playlist's current tracks as the diff
+- `~/claude-skills/vibe-playlist/profile.py` — taste-profile stats (see reverse-Wrapped below).
+- `~/claude-skills/vibe-playlist/snapshot.sh "Name"` — save a playlist's current tracks as the diff
   baseline (`snapshots/<slug>.tsv`). Run after building or after absorbing edits.
-- `~/vibe-playlists/diff.sh "Name"` — show what changed vs the last snapshot
+- `~/claude-skills/vibe-playlist/diff.sh "Name"` — show what changed vs the last snapshot
   (added / removed / reordered). Read-only; does not move the baseline.
-- `~/vibe-playlists/learn.sh "Name"` — absorb manual edits: log adds/cuts to
+- `~/claude-skills/vibe-playlist/learn.sh "Name"` — absorb manual edits: log adds/cuts to
   `feedback.tsv`, flag added artists that still need tags, then re-snapshot.
 
 ## Feedback loop (when the user edits a playlist by hand)
@@ -69,7 +69,7 @@ Afro, indie, Latin. Do NOT default to US hip-hop. For "favorites/nostalgia" use 
   vs "deep cuts / discovery", explicit/clean, etc.
 
 ## Workflow
-1. **Freshness**: if the user mentions newly added songs, run `~/vibe-playlists/refresh.sh` first.
+1. **Freshness**: if the user mentions newly added songs, run `~/claude-skills/vibe-playlist/refresh.sh` first.
 2. **Translate the vibe** into concrete signals: derived_genre(s), region, era, energy
    band, and mood words. Use seed songs — look them up, read their artists' rows in
    `artist_tags.tsv`, and expand to artists with similar derived_genre/region/mood.
@@ -78,7 +78,7 @@ Afro, indie, Latin. Do NOT default to US hip-hop. For "favorites/nostalgia" use 
    Keep the candidate pool focused.
 4. **Lazy-tag the tail**: any candidate artist missing from `artist_tags.tsv` — derive
    `derived_genre region era energy mood` from your own knowledge and **append a row** to
-   the file (`>> ~/vibe-playlists/artist_tags.tsv`). This makes the tag set self-complete
+   the file (`>> ~/claude-skills/vibe-playlist/artist_tags.tsv`). This makes the tag set self-complete
    through use; never skip a track just because its artist wasn't pre-tagged.
 5. **Curate to length**: pick and order tracks. Use `energy`/`mood` (and per-song nuance
    from your own knowledge) to honor the vibe; weight `plays` high for "favorites", low
@@ -93,7 +93,7 @@ Afro, indie, Latin. Do NOT default to US hip-hop. For "favorites/nostalgia" use 
 
 ## Taste profile (reverse-Wrapped)
 When the user asks for a taste profile / "Wrapped" / "what's my sound": run
-`python3 ~/vibe-playlists/profile.py` for the stats, then narrate vivid persona/era
+`python3 ~/claude-skills/vibe-playlist/profile.py` for the stats, then narrate vivid persona/era
 descriptors and surface a few named "vibes" — each phrased as a ready playlist seed the
 matcher can build. Distinguish nostalgia (lifetime plays) from current taste (recent adds).
 

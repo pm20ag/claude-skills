@@ -1,5 +1,5 @@
 #!/bin/bash
-# Refresh the local library cache (~/vibe-playlists/library.tsv).
+# Refresh the local library cache (~/claude-skills/vibe-playlist/library.tsv).
 # Run this whenever you've added songs to Apple Music since the last build.
 set -euo pipefail
 DIR="$(cd "$(dirname "$0")" && pwd)"

@@ -29,5 +29,5 @@ Claude picks matching tracks from your library and creates the playlist. The
 - Only arranges songs you **already own** in your library.
 - Reversible — delete any playlist:
   `osascript -e 'tell application "Music" to delete user playlist "NAME"'`
-- Refresh the cache when you've added music: `~/vibe-playlists/refresh.sh`
+- Refresh the cache when you've added music: `~/claude-skills/vibe-playlist/refresh.sh`
 - Mac-only (uses AppleScript + the Music app).
